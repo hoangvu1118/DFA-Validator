@@ -106,7 +106,19 @@ class DFAApp(QWidget):
                 if item: # If it exist -> add to transition dict with key is a transition move e.g (q0, a) -> q1 (value)
                     transitions[(state, symbol)] = item.text()
 
-        start_state = states[0]
+        # Check if required inputs are provided
+        if not states or not alphabet:
+            self.result_label.setText("❌ Please enter states and alphabet")
+            return
+        if not input_string:
+            self.result_label.setText("❌ Please enter an input string")
+            return
+        if not self.final_states.text():
+            self.result_label.setText("❌ Please specify at least one final state")
+            return
+        else:
+            start_state = states[0]
+        
         accept_state = self.final_states.text().split() 
 
         # Checking input string

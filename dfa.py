@@ -40,6 +40,7 @@ class DFAApp(QWidget):
         layout.addWidget(QLabel("Choose Finite Automata"))
         layout.addWidget(self.combo)
 
+        # need to fix this -> to fit with the layout of NFA requirements
         layout.addWidget(QLabel("States (e.g., q0 q1 q2):"))
         layout.addWidget(self.states_input)
 
@@ -65,12 +66,11 @@ class DFAApp(QWidget):
             if states and alphabet:
                 self.transition_table.setRowCount(len(states))
                 header_labels = alphabet.copy() if isinstance(alphabet, list) else alphabet.copy().split()
-                # Limit to only 2 columns for node to move
-                if(len(header_labels) > 2):
-                        header_labels = header_labels[:2]
-                        
 
                 if(self.index == 1):
+                    # The requirement state that only need 1 edge label 'a' & lambda label
+                    if(len(header_labels) > 1):
+                        header_labels = ["a"]
                     header_labels.append("λ")
                 self.transition_table.setColumnCount(len(header_labels))
                 self.transition_table.setHorizontalHeaderLabels(header_labels)

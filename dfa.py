@@ -84,7 +84,10 @@ class DFAApp(QWidget):
         layout.addWidget(self.transition_table)
 
         validate_btn = QPushButton("Validate String")
-        validate_btn.clicked.connect(self.validate_dfa)
+        if(self.index == 0):
+            validate_btn.clicked.connect(self.validate_dfa)
+        else:
+            validate_btn.clicked.connect(self.validate_nfa)
         layout.addWidget(validate_btn)
 
         layout.addWidget(self.result_label)
@@ -139,6 +142,9 @@ class DFAApp(QWidget):
         # Draw DFA
         self.draw_graph(states, alphabet, transitions, start_state, accept_state)
 
+    def validate_nfa(self):
+        ...
+
     def draw_graph(self, states, alphabet, transitions, start, accepts):
         dot = Digraph()
         dot.attr(rankdir='LR')
@@ -152,7 +158,7 @@ class DFAApp(QWidget):
         for (from_state, symbol), to_state in transitions.items():
             dot.edge(from_state, to_state, label=symbol)
 
-        filename = "dfa_output"
+        filename = "img_output"
         dot.render(filename, format='png', cleanup=True)
         self.graph_label.setPixmap(QPixmap(filename + '.png'))
     

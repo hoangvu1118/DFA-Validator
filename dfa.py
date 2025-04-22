@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap, QIcon
 from graphviz import Digraph
+from style import get_stylesheet
 
 class DFAApp(QWidget):
     def __init__(self):
@@ -12,6 +13,7 @@ class DFAApp(QWidget):
         self.setWindowTitle("ValiFA")
         self.setWindowIcon(QIcon("static/good-icon.png"))
         self.resize(700, 800)
+        self.setStyleSheet(get_stylesheet())
 
         self.combo = QComboBox()
         self.combo.addItems(["Deterministic Finite Accepters (DFA)", "Nondeterministic Finite Accepters (NFA)"])
@@ -29,7 +31,7 @@ class DFAApp(QWidget):
         self.transition_table = QTableWidget()
         self.result_label = QLabel()
         self.graph_label = QLabel()
-
+        
         self.build_ui()
 
     def build_ui(self):
@@ -88,47 +90,6 @@ class DFAApp(QWidget):
         layout.addWidget(self.result_label)
         layout.addWidget(self.graph_label)
         
-        style = """
-            QLineEdit {
-                background-color: #FFD580;
-                border: 1px solid 'black';
-                border-radius: 4px;
-            }
-
-            QLabel {
-                font-weight: bold;
-                color: 'Black';
-                font-size: large;
-            }
-
-            QTableWidget {
-                gridline-color: 'black';
-            }
-            QPushButton{
-                font-weight: bold;
-            }
-            QComboBox {
-                background-color: #FFD580;
-                border: 1px solid black;
-                border-radius: 4px;
-                padding: 3px;
-                color: black;
-                font-weight: bold;
-            }
-            
-            
-            QComboBox::down-arrow {
-                width: 14px;
-                height: 14px;
-            }
-            
-            QComboBox QAbstractItemView {
-                background-color: white;
-                selection-background-color: #4682B4;
-                selection-color: white;
-            }
-            """
-        self.setStyleSheet(style)
         self.setLayout(layout)
 
     def validate_dfa(self):

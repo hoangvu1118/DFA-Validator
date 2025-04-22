@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton,
-    QTableWidget
+    QTableWidget, QComboBox
 )
 from PyQt5.QtGui import QPixmap, QIcon
 from graphviz import Digraph
@@ -9,9 +9,16 @@ from graphviz import Digraph
 class DFAApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("DFA Validator")
+        self.setWindowTitle("ValiFA")
         self.setWindowIcon(QIcon("static/good-icon.png"))
         self.resize(700, 800)
+
+        self.combo = QComboBox()
+        self.combo.addItems(["Deterministic Finite Accepters (DFA)", "Nondeterministic Finite Accepters (NFA)"])
+        self.combo.currentIndexChanged.connect(self.switch_layout)
+
+        # 0 indicate for DFA | 1 for NFA
+        self.index = 0; # Default is DFA
 
         # Input fields
         self.states_input = QLineEdit()
@@ -27,6 +34,9 @@ class DFAApp(QWidget):
 
     def build_ui(self):
         layout = QVBoxLayout() # Create an app that element is put on top of each other
+
+        layout.addWidget(QLabel("Choose Finite Automata"))
+        layout.addWidget(self.combo)
 
         layout.addWidget(QLabel("States (e.g., q0 q1 q2):"))
         layout.addWidget(self.states_input)
@@ -52,7 +62,16 @@ class DFAApp(QWidget):
             
             if states and alphabet:
                 self.transition_table.setRowCount(len(states))
-                self.transition_table.setHorizontalHeaderLabels(alphabet)
+                header_labels = alphabet.copy() if isinstance(alphabet, list) else alphabet.copy().split()
+                # Limit to only 2 columns for node to move
+                if(len(header_labels) > 2):
+                        header_labels = header_labels[:2]
+                        
+
+                if(self.index == 1):
+                    header_labels.append("λ")
+                self.transition_table.setColumnCount(len(header_labels))
+                self.transition_table.setHorizontalHeaderLabels(header_labels)
                 self.transition_table.setVerticalHeaderLabels(states)
         
         # update function to the text changed signals
@@ -88,6 +107,26 @@ class DFAApp(QWidget):
             QPushButton{
                 font-weight: bold;
             }
+            QComboBox {
+                background-color: #FFD580;
+                border: 1px solid black;
+                border-radius: 4px;
+                padding: 3px;
+                color: black;
+                font-weight: bold;
+            }
+            
+            
+            QComboBox::down-arrow {
+                width: 14px;
+                height: 14px;
+            }
+            
+            QComboBox QAbstractItemView {
+                background-color: white;
+                selection-background-color: #4682B4;
+                selection-color: white;
+            }
             """
         self.setStyleSheet(style)
         self.setLayout(layout)
@@ -122,7 +161,7 @@ class DFAApp(QWidget):
         if current in accept_state:
             self.result_label.setText(f"✅ Accepted {self.string_input.text()}")
         else:
-            self.result_label.setText("❌ Rejected")
+            self.result_label.setText(f"❌ Rejected {self.string_input.text()}")
 
         # Draw DFA
         self.draw_graph(states, alphabet, transitions, start_state, accept_state)
@@ -143,7 +182,12 @@ class DFAApp(QWidget):
         filename = "dfa_output"
         dot.render(filename, format='png', cleanup=True)
         self.graph_label.setPixmap(QPixmap(filename + '.png'))
-
+    
+    def switch_layout(self, index):
+        if index == 1:
+            self.index = 1;
+        else:
+            self.index = 0;
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

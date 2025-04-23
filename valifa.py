@@ -163,10 +163,33 @@ class DFAApp(QWidget):
         self.graph_label.setPixmap(QPixmap(filename + '.png'))
     
     def switch_layout(self, index):
-        if index == 1:
-            self.index = 1;
-        else:
-            self.index = 0;
+        self.index = index  # 0 for DFA, 1 for NFA
+        
+        # Update UI elements based on selected mode
+        if index == 1:  # NFA
+            self.setWindowTitle("ValiFA - NFA Mode")
+            # Update transition table for NFA requirements
+            states = self.states_input.text().split()
+            if states:
+                self.transition_table.setRowCount(len(states))
+                header_labels = ["a", "λ"]  # NFA only needs 'a' and lambda
+                self.transition_table.setColumnCount(len(header_labels))
+                self.transition_table.setHorizontalHeaderLabels(header_labels)
+                self.transition_table.setVerticalHeaderLabels(states)
+        else:  # DFA
+            self.setWindowTitle("ValiFA - DFA Mode")
+            # Update transition table for DFA requirements
+            states = self.states_input.text().split()
+            alphabet = self.alphabet_input.text().split()
+            if states and alphabet:
+                self.transition_table.setRowCount(len(states))
+                self.transition_table.setColumnCount(len(alphabet))
+                self.transition_table.setHorizontalHeaderLabels(alphabet)
+                self.transition_table.setVerticalHeaderLabels(states)
+        
+        # Clear previous validation results
+        self.result_label.setText("")
+        self.graph_label.clear()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

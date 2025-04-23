@@ -1,4 +1,4 @@
-# DFA-Validator
+# Valifa-Validator for Finite Automata
 
 
 ## Installation Instructions

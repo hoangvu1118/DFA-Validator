@@ -31,28 +31,46 @@ class DFAApp(QWidget):
         self.transition_table = QTableWidget()
         self.result_label = QLabel()
         self.graph_label = QLabel()
-        
+        self.layout = QVBoxLayout() # Create an app that element is put on top of each other
+
         self.build_ui()
 
     def build_ui(self):
-        layout = QVBoxLayout() # Create an app that element is put on top of each other
+         
+        self.layout.addWidget(QLabel("Choose Finite Automata"))
+        self.layout.addWidget(self.combo)
 
-        layout.addWidget(QLabel("Choose Finite Automata"))
-        layout.addWidget(self.combo)
+        self.layout.addWidget(QLabel("States (e.g., q0 q1 q2):"))
+        self.layout.addWidget(self.states_input)
 
-        # need to fix this -> to fit with the layout of NFA requirements
-        layout.addWidget(QLabel("States (e.g., q0 q1 q2):"))
-        layout.addWidget(self.states_input)
+        self.layout.addWidget(QLabel("Alphabet (e.g., a b or 0 1):"))
+        self.layout.addWidget(self.alphabet_input)
 
-        layout.addWidget(QLabel("Alphabet (e.g., a b || 0 1):"))
-        layout.addWidget(self.alphabet_input)
-
-        layout.addWidget(QLabel("Input String:"))
-        layout.addWidget(self.string_input)
-
+        # DFA - Input String (default shown)
+        self.string_label = QLabel("Input String:")
+        self.layout.addWidget(self.string_label)
+        self.layout.addWidget(self.string_input)
         
-        layout.addWidget(QLabel("Final States(e.g., q1 q2):"))
-        layout.addWidget(self.final_states)
+        # NFA - Extra input fields (initially hidden)
+        self.single_state_label = QLabel("Input Single State (e.g., q0):")
+        self.single_state_input = QLineEdit()
+        self.subset_label = QLabel("Input a subset (e.g, '{q0, q1, q2}'):")
+        self.subset_input = QLineEdit()
+        
+        # Initially, hide the NFA inputs
+        self.single_state_label.hide()
+        self.single_state_input.hide()
+        self.subset_label.hide()
+        self.subset_input.hide()
+        
+        # Add the hidden widgets to the layout
+        self.layout.addWidget(self.single_state_label)
+        self.layout.addWidget(self.single_state_input)
+        self.layout.addWidget(self.subset_label)
+        self.layout.addWidget(self.subset_input)
+        
+        self.layout.addWidget(QLabel("Final States(e.g., q1 q2):"))
+        self.layout.addWidget(self.final_states)
 
         row = len(self.states_input.text().split())
         self.transition_table.setRowCount(row)
@@ -80,20 +98,20 @@ class DFAApp(QWidget):
         self.states_input.textChanged.connect(update_table)
         self.alphabet_input.textChanged.connect(update_table)
 
-        layout.addWidget(QLabel("Transition Table (double-click cells to edit):"))
-        layout.addWidget(self.transition_table)
+        self.layout.addWidget(QLabel("Transition Table (double-click cells to edit):"))
+        self.layout.addWidget(self.transition_table)
 
         validate_btn = QPushButton("Validate String")
         if(self.index == 0):
             validate_btn.clicked.connect(self.validate_dfa)
         else:
             validate_btn.clicked.connect(self.validate_nfa)
-        layout.addWidget(validate_btn)
+        self.layout.addWidget(validate_btn)
 
-        layout.addWidget(self.result_label)
-        layout.addWidget(self.graph_label)
+        self.layout.addWidget(self.result_label)
+        self.layout.addWidget(self.graph_label)
         
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     def validate_dfa(self):
         states = self.states_input.text().split()
@@ -109,7 +127,7 @@ class DFAApp(QWidget):
                 if item: # If it exist -> add to transition dict with key is a transition move e.g (q0, a) -> q1 (value)
                     transitions[(state, symbol)] = item.text()
 
-        # Check if required inputs are provided
+        # Check if required inputs are provided by the users
         if not states or not alphabet:
             self.result_label.setText("❌ Please enter states and alphabet")
             return
@@ -165,29 +183,50 @@ class DFAApp(QWidget):
     def switch_layout(self, index):
         self.index = index  # 0 for DFA, 1 for NFA
         
-        # Update UI elements based on selected mode
+        # Toggle visibility of input widgets based on mode
         if index == 1:  # NFA
+            # Hide DFA specific widgets
+            self.string_label.hide()
+            self.string_input.hide()
+            
+            # Show NFA specific widgets
+            self.single_state_label.show()
+            self.single_state_input.show()
+            self.subset_label.show()
+            self.subset_input.show()
+            
             self.setWindowTitle("ValiFA - NFA Mode")
-            # Update transition table for NFA requirements
-            states = self.states_input.text().split()
-            if states:
-                self.transition_table.setRowCount(len(states))
-                header_labels = ["a", "λ"]  # NFA only needs 'a' and lambda
+            
+        else:  # DFA
+            # Show DFA specific widgets
+            self.string_label.show()
+            self.string_input.show()
+            
+            # Hide NFA specific widgets
+            self.single_state_label.hide()
+            self.single_state_input.hide()
+            self.subset_label.hide()
+            self.subset_input.hide()
+            
+            
+            self.setWindowTitle("ValiFA - DFA Mode")
+        
+        # Update transition table
+        states = self.states_input.text().split()
+        if states:
+            self.transition_table.setRowCount(len(states))
+            if index == 0:  # DFA
+                alphabet = self.alphabet_input.text().split()
+                if alphabet:
+                    self.transition_table.setColumnCount(len(alphabet))
+                    self.transition_table.setHorizontalHeaderLabels(alphabet)
+            else:  # NFA
+                header_labels = ["a", "λ"]
                 self.transition_table.setColumnCount(len(header_labels))
                 self.transition_table.setHorizontalHeaderLabels(header_labels)
-                self.transition_table.setVerticalHeaderLabels(states)
-        else:  # DFA
-            self.setWindowTitle("ValiFA - DFA Mode")
-            # Update transition table for DFA requirements
-            states = self.states_input.text().split()
-            alphabet = self.alphabet_input.text().split()
-            if states and alphabet:
-                self.transition_table.setRowCount(len(states))
-                self.transition_table.setColumnCount(len(alphabet))
-                self.transition_table.setHorizontalHeaderLabels(alphabet)
-                self.transition_table.setVerticalHeaderLabels(states)
+            self.transition_table.setVerticalHeaderLabels(states)
         
-        # Clear previous validation results
+        # Clear previous results
         self.result_label.setText("")
         self.graph_label.clear()
 

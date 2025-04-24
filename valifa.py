@@ -6,11 +6,12 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap, QIcon
 from graphviz import Digraph
 from style import get_stylesheet
+import re
 
 class DFAApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("ValiFA")
+        self.setWindowTitle("ValiFA - DFA Mode")
         self.setWindowIcon(QIcon("static/good-icon.png"))
         self.resize(700, 800)
         self.setStyleSheet(get_stylesheet())
@@ -42,12 +43,19 @@ class DFAApp(QWidget):
         
         if states and alphabet:
             header_labels = alphabet.copy() if isinstance(alphabet, list) else alphabet.copy().split()
-            
             self.transition_table.setRowCount(len(states))
             self.transition_table.setVerticalHeaderLabels(states)
             
             self.transition_table.setColumnCount(len(header_labels))
             self.transition_table.setHorizontalHeaderLabels(header_labels)
+            if(self.index == 1):
+                self.alphabet_input.setText("a λ")
+
+    def validate(self):
+            if self.index == 0:
+                self.validate_dfa()
+            else:
+                self.validate_nfa()
 
     def build_ui(self):
          
@@ -98,11 +106,10 @@ class DFAApp(QWidget):
         self.layout.addWidget(QLabel("Transition Table (double-click cells to edit):"))
         self.layout.addWidget(self.transition_table)
 
+
         validate_btn = QPushButton("Validate String")
-        if(self.index == 0):
-            validate_btn.clicked.connect(self.validate_dfa)
-        else:
-            validate_btn.clicked.connect(self.validate_nfa)
+        validate_btn.clicked.connect(self.validate)
+
 
         self.layout.addWidget(validate_btn)
         self.layout.addWidget(self.result_label)
@@ -121,8 +128,13 @@ class DFAApp(QWidget):
             for j, symbol in enumerate(alphabet):
                 # Getting element according to state i and input j
                 item = self.transition_table.item(i, j) # State after it moves 
-                if item: # If it exist -> add to transition dict with key is a transition move e.g (q0, a) -> q1 (value)
+                if item:
+                    #print(f"State: {state}, Symbol: {symbol}, Item: {item}, Item text: {item.text()}, index :{i} {j}")
+                # If it exist -> add to transition dict with key is a transition move e.g (q0, a) -> q1 (value)
                     transitions[(state, symbol)] = item.text().strip()
+                    #print(f"Transition at index {i} {j} : {transitions[(state,symbol)]}")
+                else:
+                    print(f"State: {state}, Symbol: {symbol}, Item is None")
 
         # Check if required inputs are provided by the users
         if not states or not alphabet:
@@ -158,7 +170,117 @@ class DFAApp(QWidget):
         self.draw_graph(states, transitions, start_state, accept_state)
 
     def validate_nfa(self):
-        ...
+        states = self.states_input.text().strip().split()
+        single_state = self.single_state_input.text().strip()
+        subset_input = self.subset_input.text().strip()
+        transitions = {}
+        
+        # Parse transitions from table - for NFA, each cell can contain multiple states
+        for i, state in enumerate(states):
+            for j, symbol in enumerate(["a", "λ"]):  # NFA uses fixed symbols
+                item = self.transition_table.item(i, j)
+                if item and item.text().strip():
+                    # Split by commas, spaces, or both and strip each state
+                    dest_states = [s.strip() for s in item.text().replace(',', ' ').split()]
+                    # Filter out empty strings
+                    dest_states = [s for s in dest_states if s]
+                    if dest_states:
+                        transitions[(state, symbol)] = dest_states
+        
+        # Parse subset input to handle different formats
+        subset_states = self.parse_subset(subset_input)
+        
+        # Validation checks
+        if not states:
+            self.result_label.setText("❌ Please enter states")
+            return
+        if not single_state:
+            self.result_label.setText("❌ Please enter a single state")
+            return
+        if not subset_states:
+            self.result_label.setText("❌ Please enter a subset of states")
+            return
+        
+        # Start with the single state
+        current_states = {single_state}
+        accept_states = set(self.final_states.text().split())
+        
+        # Process each subset state
+        for subset_state in subset_states:
+            # Apply lambda transitions first (epsilon closure)
+            new_states = set(current_states)
+            lambda_processed = set()
+            
+            while new_states != lambda_processed:
+                for state in new_states - lambda_processed:
+                    if (state, "λ") in transitions:
+                        new_states.update(transitions[(state, "λ")])
+                    lambda_processed.add(state)
+            
+            current_states = new_states
+            
+            # Process 'a' transitions for all current states
+            next_states = set()
+            for state in current_states:
+                if (state, "a") in transitions:
+                    next_states.update(transitions[(state, "a")])
+            
+            # Update current states
+            current_states = next_states
+            
+            # Apply lambda transitions again
+            new_states = set(current_states)
+            lambda_processed = set()
+            
+            while new_states != lambda_processed:
+                for state in new_states - lambda_processed:
+                    if (state, "λ") in transitions:
+                        new_states.update(transitions[(state, "λ")])
+                    lambda_processed.add(state)
+            
+            current_states = new_states
+        
+        # Check if any current state is an accept state
+
+        result_text = f"✅ Accepted - For input subset: {subset_input}"
+        result_text += f"\nStarting from: {single_state}"
+        result_text += f"\nEnding in states: {', '.join(current_states)}"
+        self.result_label.setText(result_text)
+        
+        # Draw the NFA graph
+        self.draw_nfa_graph(states, transitions, single_state, accept_states)
+
+    def parse_subset(self, subset_text):
+        """Parse a subset string like '{q0, q1, q2}' or 'q0,q1,q2' into a list of states"""
+        # Remove curly braces, spaces around commas
+        cleaned = subset_text.strip().replace('{', '').replace('}', '')
+        # Split by commas and/or spaces
+        result = [s.strip() for s in re.split(r'[,\s]+', cleaned)]
+        # Remove empty strings
+        return [s for s in result if s]
+
+    def draw_nfa_graph(self, states, transitions, start, accepts):
+        """Draw NFA graph with multiple transitions per state-symbol pair"""
+        dot = Digraph()
+        dot.attr(rankdir='LR')
+        dot.node('', shape='none')
+        dot.edge('', start)
+
+        for state in states:
+            shape = 'doublecircle' if state in accepts else 'circle'
+            dot.node(state, shape=shape)
+
+        for (from_state, symbol), to_states in transitions.items():
+            for to_state in to_states:
+                dot.edge(from_state, to_state, label=symbol)
+
+        filename = "img_output"
+        dot.render(filename, format='png', cleanup=True)
+        self.graph_label.setPixmap(QPixmap(filename + '.png'))
+
+
+
+
 
     def draw_graph(self, states, transitions, start, accepts):
         dot = Digraph()

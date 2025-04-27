@@ -1,7 +1,18 @@
-# Valifa-Validator for Finite Automata
+# 1.Valifa - Validator for Finite Automata
+ValiFa has 2 modes
++ DFA mode: It is created for receiving input string and check if it is accepted by a DFA
++ NFA mode: User input the single state, and a substate T, the program will then output the **Extended Transition Function**
++ Finally, it will draw the graph for each of the mode
 
+# 2.App screenshots
+## DFA-Mode: Accepted - Rejected String
+<img src="https://github.com/user-attachments/assets/aa28e0aa-f5f7-4d06-8a90-ea891c7a4a75" alt="Demo Image" width="400" height="500"/>
+<img src="https://github.com/user-attachments/assets/335e59f3-bfbc-4b0e-8173-1bbcefe6f963" alt="Demo Image" width="400" height="500"/>
 
-## Installation Instructions
+## NFA-Mode: Single State Extended Transition Function
+<img src="https://github.com/user-attachments/assets/ec687253-3b3c-4585-8fea-7e6608523dcd" alt="Demo Image" width="400" height="500"/>
+
+# 3.Installation Instructions
 To install these dependencies, you can run:
 ```
     pip install -r requirements.txt

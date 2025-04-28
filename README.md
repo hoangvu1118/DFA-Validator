@@ -10,7 +10,7 @@ ValiFa has 2 modes
 <img src="https://github.com/user-attachments/assets/335e59f3-bfbc-4b0e-8173-1bbcefe6f963" alt="Demo Image" width="400" height="500"/>
 
 ## NFA-Mode: Single State Extended Transition Function
-<img src="https://github.com/user-attachments/assets/ec687253-3b3c-4585-8fea-7e6608523dcd" alt="Demo Image" width="400" height="500"/>
+<img src="https://github.com/user-attachments/assets/b1d1df18-0a14-49aa-b965-2105602c5b6e" alt="Demo Image" width="400" height="500"/>
 
 # 3.Installation Instructions
 To install these dependencies, you can run:

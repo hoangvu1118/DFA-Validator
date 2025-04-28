@@ -61,11 +61,6 @@ def get_stylesheet():
         min-height: 25px;
     }
     
-    QComboBox::drop-down {
-        border: 0px;
-        width: 20px;
-    }
-    
     QComboBox::down-arrow {
         width: 14px;
         height: 14px;

@@ -1,3 +1,4 @@
 .bashrc
 img_output.png
 __pycache__
+conda init bash

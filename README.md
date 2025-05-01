@@ -35,3 +35,24 @@ You can choose 1 out of below 3 options
 ```
     brew install graphviz
 ```
+
+## Run Venv Environment
+
+If using Windows run this in the bash
+```
+    eval "$(conda shell.bash hook)"
+```
+OR
+
+1. Run the conda initialization command:
+```
+conda init bash
+```
+2. After running this command, you'll need to restart your terminal or reload your bash configuration:
+```
+source ~/.bashrc   # On Linux
+# OR
+source ~/.bash_profile   # On macOS
+# OR on Windows with Git Bash
+source ~/.bash_profile
+```

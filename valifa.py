@@ -32,9 +32,7 @@ class DFAApp(QWidget):
         )
         self.combo.currentIndexChanged.connect(self.switchLayout)
 
-        # 0 indicate for DFA | 1 for NFA
         self.index = 0
-        # Default is DFA
 
         self.statesInput = QLineEdit()
         self.alphabetInput = QLineEdit()
@@ -44,36 +42,34 @@ class DFAApp(QWidget):
         self.transitionTable = QTableWidget()
         self.resultLabel = QLabel()
         self.graphLabel = QLabel()
-        self.layout = (
-            QVBoxLayout()
-        )  
+        self.layout = QVBoxLayout()
 
         self.appUI()
 
     def updateTable(self):
-        states = self.statesInput.text().split()
+        States = self.statesInput.text().split()
         alphabet = self.alphabetInput.text().split() if self.index == 0 else ["a", "λ"]
 
-        if states or alphabet:
+        if States or alphabet:
             if isinstance(alphabet, list):
-                headerLabels = alphabet.copy()
+                Header_labels = alphabet.copy()
             else:
-                headerLabels = alphabet.split()
+                Header_labels = alphabet.split()
 
-            self.transitionTable.setRowCount(len(states))
-            self.transitionTable.setVerticalHeaderLabels(states)
+            self.transitionTable.setRowCount(len(States))
+            self.transitionTable.setVerticalHeaderLabels(States)
 
-            self.transitionTable.setColumnCount(len(headerLabels))
-            self.transitionTable.setHorizontalHeaderLabels(headerLabels)
+            self.transitionTable.setColumnCount(len(Header_labels))
+            self.transitionTable.setHorizontalHeaderLabels(Header_labels)
 
             if self.index == 1:
                 self.alphabetInput.setText("a λ")
 
     def validate(self):
         if self.index == 0:
-            self.validateDfa()
+            self.validatedfa()
         else:
-            self.validateNfa()
+            self.validatenfa()
 
     def appUI(self):
 
@@ -87,18 +83,17 @@ class DFAApp(QWidget):
         self.layout.addWidget(self.alphabetLabel)
         self.layout.addWidget(self.alphabetInput)
 
-        # DFA 
+        # DFA
         self.stringLabel = QLabel("Input String:")
         self.layout.addWidget(self.stringLabel)
         self.layout.addWidget(self.stringInput)
 
-        # NFA 
+        # NFA
         self.singleStateLabel = QLabel("Input Single State (e.g., q0):")
         self.singleStateInput = QLineEdit()
         self.subsetLabel = QLabel("Input a subset (e.g, q0, q1, q2):")
         self.subsetInput = QLineEdit()
 
-        # hide NFA brackets
         self.singleStateLabel.hide()
         self.singleStateInput.hide()
         self.subsetLabel.hide()
@@ -116,7 +111,6 @@ class DFAApp(QWidget):
         self.transitionTable.setRowCount(row)
         self.transitionTable.setColumnCount(2)
 
-        # update function to the text changed signals
         self.statesInput.textChanged.connect(self.updateTable)
         self.alphabetInput.textChanged.connect(self.updateTable)
 
@@ -132,19 +126,17 @@ class DFAApp(QWidget):
 
         self.setLayout(self.layout)
 
-    def validateDfa(self):
+    def validatedfa(self):
         states = self.statesInput.text().strip().split()
         alphabet = self.alphabetInput.text().strip().split()
         inputString = self.stringInput.text().strip()
         transitions = {}
 
-        # Go through each entry to find the next states -> store in the transitions
         for i, state in enumerate(states):
             for j, symbol in enumerate(alphabet):
-                item = self.transitionTable.item(i, j) 
+                item = self.transitionTable.item(i, j)
                 if item:
                     transitions[(state, symbol)] = item.text().strip()
-
 
         if not states or not alphabet:
             self.resultLabel.setText("❌ Please enter states and alphabet")
@@ -160,7 +152,7 @@ class DFAApp(QWidget):
 
         acceptState = self.finalStates.text().split()
 
-        # Checking input string
+
         current = startState
         for symbol in inputString:
             if (current, symbol) in transitions:
@@ -168,7 +160,6 @@ class DFAApp(QWidget):
             else:
                 self.resultLabel.setText("❌ Rejected (invalid transition)")
                 return
-
 
         if current in acceptState:
             self.resultLabel.setText(f"✅ Accepted {self.stringInput.text()}")
@@ -180,7 +171,6 @@ class DFAApp(QWidget):
     def extendedTransition(self, subsetStates, transitions):
         currentStates = set(subsetStates)
 
-        # Apply lambda transitions first (lambda closure)
         newStates = currentStates.copy()
         lambdaClosure = set()
 
@@ -197,7 +187,7 @@ class DFAApp(QWidget):
             if (state, "a") in transitions:
                 nextStates.update(transitions[(state, "a")])
 
-        # Update currentstates
+
         currentStates = nextStates
         # Final lambda closure
         newStates = currentStates.copy()
@@ -212,14 +202,14 @@ class DFAApp(QWidget):
         currentStates = newStates
         return currentStates
 
-    def validateNfa(self):
+    def validatenfa(self):
         states = self.statesInput.text().strip().split()
         singleState = self.singleStateInput.text().strip()
         subsetInput = self.subsetInput.text().strip()
         transitions = {}
 
         for i, state in enumerate(states):
-            for j, symbol in enumerate(["a", "λ"]): 
+            for j, symbol in enumerate(["a", "λ"]):
                 item = self.transitionTable.item(i, j)
                 if item and item.text().strip():
                     inputText = item.text().strip()
@@ -240,10 +230,9 @@ class DFAApp(QWidget):
         acceptStates = set(self.finalStates.text().split())
         subsetStates = subsetInput.split(" ")
         singleReformat = [singleState]
-    
+
         finalSingleset = self.extendedTransition(singleReformat, transitions)
         finalSubset = self.extendedTransition(subsetStates, transitions)
-
 
         resultText = f"ETD: Extended Transition Function"
         resultText += f"\n✅ Single State: {singleState}"
@@ -255,7 +244,6 @@ class DFAApp(QWidget):
 
         startState = states[0]
         self.graph(states, transitions, startState, acceptStates)
-
 
     def graph(self, states, transitions, start, accepts):
         dot = Digraph()
@@ -279,12 +267,11 @@ class DFAApp(QWidget):
         dot.render(fileName, format="png", cleanup=True)
         self.graphLabel.setPixmap(QPixmap(fileName + ".png"))
 
-
     def switchLayout(self, index):
         self.index = index  # 0 for DFA, 1 for NFA
 
         self.clearInputs()
-        if index == 1:  # NFA
+        if index == 1:  
             self.stringLabel.hide()
             self.stringInput.hide()
             self.alphabetLabel.hide()
@@ -298,7 +285,7 @@ class DFAApp(QWidget):
             self.setWindowTitle("ValiFA - NFA Mode")
             self.updateTable()
 
-        else:  # DFA
+        else:
             self.stringLabel.show()
             self.stringInput.show()
             self.alphabetLabel.show()
@@ -309,7 +296,6 @@ class DFAApp(QWidget):
             self.subsetLabel.hide()
             self.subsetInput.hide()
             self.setWindowTitle("ValiFA - DFA Mode")
-            
 
     def clearInputs(self):
         self.stringInput.clear()

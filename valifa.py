@@ -89,20 +89,20 @@ class DFAApp(QWidget):
         self.layout.addWidget(self.stringInput)
 
         # NFA
-        self.singleStateLabel = QLabel("Input Single State (e.g., q0):")
-        self.singleStateInput = QLineEdit()
-        self.subsetLabel = QLabel("Input a subset (e.g, q0, q1, q2):")
-        self.subsetInput = QLineEdit()
+        self.singleStatelabel = QLabel("Input Single State (e.g., q0):")
+        self.singleStateinput = QLineEdit()
+        self.subsetlabel = QLabel("Input a subset (e.g, q0, q1, q2):")
+        self.subsetinput = QLineEdit()
 
-        self.singleStateLabel.hide()
-        self.singleStateInput.hide()
-        self.subsetLabel.hide()
-        self.subsetInput.hide()
+        self.singleStatelabel.hide()
+        self.singleStateinput.hide()
+        self.subsetlabel.hide()
+        self.subsetinput.hide()
 
-        self.layout.addWidget(self.singleStateLabel)
-        self.layout.addWidget(self.singleStateInput)
-        self.layout.addWidget(self.subsetLabel)
-        self.layout.addWidget(self.subsetInput)
+        self.layout.addWidget(self.singleStatelabel)
+        self.layout.addWidget(self.singleStateinput)
+        self.layout.addWidget(self.subsetlabel)
+        self.layout.addWidget(self.subsetinput)
 
         self.layout.addWidget(QLabel("Final States(e.g., q1 q2):"))
         self.layout.addWidget(self.finalStates)
@@ -129,7 +129,7 @@ class DFAApp(QWidget):
     def validatedfa(self):
         states = self.statesInput.text().strip().split()
         alphabet = self.alphabetInput.text().strip().split()
-        inputString = self.stringInput.text().strip()
+        inputstring = self.stringInput.text().strip()
         transitions = {}
 
         for i, state in enumerate(states):
@@ -141,7 +141,7 @@ class DFAApp(QWidget):
         if not states or not alphabet:
             self.resultLabel.setText("❌ Please enter states and alphabet")
             return
-        if not inputString:
+        if not inputstring:
             self.resultLabel.setText("❌ Please enter an input string")
             return
         if not self.finalStates.text():
@@ -154,7 +154,7 @@ class DFAApp(QWidget):
 
 
         current = startState
-        for symbol in inputString:
+        for symbol in inputstring:
             if (current, symbol) in transitions:
                 current = transitions[(current, symbol)]
             else:
@@ -204,8 +204,8 @@ class DFAApp(QWidget):
 
     def validatenfa(self):
         states = self.statesInput.text().strip().split()
-        singleState = self.singleStateInput.text().strip()
-        subsetInput = self.subsetInput.text().strip()
+        singleState = self.singleStateinput.text().strip()
+        subsetInput = self.subsetinput.text().strip()
         transitions = {}
 
         for i, state in enumerate(states):
@@ -277,10 +277,10 @@ class DFAApp(QWidget):
             self.alphabetLabel.hide()
             self.alphabetInput.hide()
 
-            self.singleStateLabel.show()
-            self.singleStateInput.show()
-            self.subsetLabel.show()
-            self.subsetInput.show()
+            self.singleStatelabel.show()
+            self.singleStateinput.show()
+            self.subsetlabel.show()
+            self.subsetinput.show()
             self.alphabetInput.setText("a")
             self.setWindowTitle("ValiFA - NFA Mode")
             self.updateTable()
@@ -291,16 +291,16 @@ class DFAApp(QWidget):
             self.alphabetLabel.show()
             self.alphabetInput.show()
 
-            self.singleStateLabel.hide()
-            self.singleStateInput.hide()
-            self.subsetLabel.hide()
-            self.subsetInput.hide()
+            self.singleStatelabel.hide()
+            self.singleStateinput.hide()
+            self.subsetlabel.hide()
+            self.subsetinput.hide()
             self.setWindowTitle("ValiFA - DFA Mode")
 
     def clearInputs(self):
         self.stringInput.clear()
-        self.singleStateInput.clear()
-        self.subsetInput.clear()
+        self.singleStateinput.clear()
+        self.subsetinput.clear()
         self.alphabetInput.clear()
         self.transitionTable.clearContents()
         self.resultLabel.setText("")

@@ -15,7 +15,7 @@ ValiFa has 2 modes
 # 3.Installation Instructions
 To install these dependencies, you can run:
 ```
-    pip install -r requirements.txt
+    pip install -r requirement.txt
 ```
 
 ## System Requirements
